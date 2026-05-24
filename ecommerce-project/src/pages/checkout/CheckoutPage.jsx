@@ -9,15 +9,29 @@ function CheckoutPage({ cart }) {
   const [deliveryOptions, setDeliverOptions] = useState([]);
   const [paymentSummary, setPaymentSummary] = useState(null);
 
+  // useEffect(() => {
+  //   axios
+  //     .get("/api/delivery-options?expand=estimatedDeliveryTime")
+  //     .then((response) => {
+  //       setDeliverOptions(response.data);
+  //     });
+  //   axios.get("/api/payment-summary").then((response) => {
+  //     setPaymentSummary(response.data);
+  //   });
+  // }, []);
+
   useEffect(() => {
-    axios
-      .get("/api/delivery-options?expand=estimatedDeliveryTime")
-      .then((response) => {
-        setDeliverOptions(response.data);
-      });
-    axios.get("/api/payment-summary").then((response) => {
+    const fetchCheckoutData = async () => {
+      let response = await axios.get(
+        "/api/delivery-options?expand=estimatedDeliveryTime",
+      );
+
+      setDeliverOptions(response.data);
+
+      response = await axios.get("/api/payment-summary");
       setPaymentSummary(response.data);
-    });
+    };
+    fetchCheckoutData();
   }, []);
   return (
     <>

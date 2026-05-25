@@ -4,12 +4,18 @@ import axios from "axios";
 
 function Product({ product, loadCart }) {
   const [quantity, setQuantity] = useState(1);
+  const [isAdded, setIsAdded] = useState(false);
+
   const addToCart = async () => {
     await axios.post("/api/cart-items", {
       productId: product.id,
       quantity,
     });
     await loadCart();
+    setIsAdded(true);
+    setTimeout(() => {
+      setIsAdded(false);
+    }, 2000);
   };
 
   const selectQuantity = (event) => {
@@ -54,10 +60,12 @@ function Product({ product, loadCart }) {
 
       <div className="product-spacer"></div>
 
-      <div className="added-to-cart">
-        <img src="images/icons/checkmark.png" />
-        Added
-      </div>
+      {isAdded && (
+        <div className="added-to-cart" style={{ display: "flex", opacity: 1 }}>
+          <img src="images/icons/checkmark.png" alt="checkmark" />
+          Added
+        </div>
+      )}
 
       <button className="add-to-cart-button button-primary" onClick={addToCart}>
         Add to Cart

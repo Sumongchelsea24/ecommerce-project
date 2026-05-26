@@ -5,7 +5,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import formatMoney from "../../utils/money";
 
-function OrdersPage({ cart }) {
+function OrdersPage({ cart, loadCart }) {
   const [order, setOrders] = useState([]);
   // useEffect(() => {
   //   axios.get("/api/orders?expand=products").then((response) => {
@@ -19,6 +19,23 @@ function OrdersPage({ cart }) {
     };
     fetchOdersData();
   }, []);
+  const addToCart = async (productId) => {
+    try {
+      await axios.post("/api/cart-items", {
+        productId,
+        quantity: 1,
+      });
+
+      // 2. FIXED: सामान थपिएपछि हेडरको काउन्ट अपडेट गर्न यो कल गर्नैपर्छ
+      if (loadCart) {
+        await loadCart();
+      }
+
+      alert("Product added to cart!");
+    } catch (error) {
+      console.error("Cart ma thapda error aayo:", error);
+    }
+  };
   return (
     <div>
       <title>Orders</title>
@@ -70,7 +87,10 @@ function OrdersPage({ cart }) {
                           <div className="product-quantity">
                             Quantity: {orderProduct.quantity}
                           </div>
-                          <button className="buy-again-button button-primary">
+                          <button
+                            className="buy-again-button button-primary"
+                            onClick={() => addToCart(orderProduct.product.id)}
+                          >
                             <img
                               className="buy-again-icon"
                               src="images/icons/buy-again.png"

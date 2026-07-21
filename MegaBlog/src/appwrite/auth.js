@@ -4,10 +4,18 @@ import { Client, Account, ID } from "appwrite";
 export class AuthService {
   client = new Client();
   account;
+
   constructor() {
-    this.client
-      .setEndpoint(conf.appwriteUrl)
-      .setProject(conf.appwriteProjectId);
+    // Check if endpoint is present to prevent crashes on initialization
+    if (conf.appwriteUrl && conf.appwriteUrl !== "undefined") {
+      this.client
+        .setEndpoint(conf.appwriteUrl)
+        .setProject(conf.appwriteProjectId);
+    } else {
+      console.error(
+        "Appwrite Error: Endpoint URL is missing or undefined. Check your .env configuration.",
+      );
+    }
     this.account = new Account(this.client);
   }
 
@@ -19,36 +27,43 @@ export class AuthService {
         password,
         name,
       );
+
       if (userAccount) {
-        //call another method
-        return this.login({ email, password });
+        // Automatically log in after successful account creation
+        return await this.login({ email, password });
       } else {
         return userAccount;
       }
     } catch (error) {
-      console.log("Appwrite service::createAccount :: error", error);
+      console.log("Appwrite service :: createAccount :: error", error);
+      throw error; // Re-throw error so component state/UI can display error messages
     }
   }
+
   async login({ email, password }) {
     try {
       return await this.account.createEmailPasswordSession(email, password);
     } catch (error) {
-      console.log("Appwrite service::login :: error", error);
+      console.log("Appwrite service :: login :: error", error);
+      throw error;
     }
   }
+
   async getCurrentUser() {
     try {
       return await this.account.get();
     } catch (error) {
-      console.log("Appwrite service::getCurrentUser :: error", error);
+      console.log("Appwrite service :: getCurrentUser :: error", error);
     }
     return null;
   }
+
   async logout() {
     try {
-      return await this.account.deleteSession();
+      // Pass 'current' to log out of the active session specifically
+      return await this.account.deleteSession("current");
     } catch (error) {
-      console.log("Appwrite service::logout :: error", error);
+      console.log("Appwrite service :: logout :: error", error);
     }
   }
 }
